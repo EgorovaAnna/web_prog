@@ -1,10 +1,9 @@
+<meta charset="utf-8">
 <title>Поиск контакта</title>
-<p>
-	Введите {{ pattern }}
-</p>
-<p>
-	???
-</p>
-<p>
-	???
-</p>
+<h1>{{ error_message|default:"Введите данные контакта"}}</h1>
+<form action = 'list/' method = "post">
+	{{ form }} {% csrf_token %}
+	<input type = "submit" value = "Поиск">
+</form>
+
+

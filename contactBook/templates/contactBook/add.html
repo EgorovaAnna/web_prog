@@ -1,5 +1,7 @@
-<h1>Введите данные нового контакта</h1>
-<form action="/add_new_contact/" method="post">
-	{{ form.as_p }}
+<meta charset="utf-8">
+<title>Добавление контакта</title>
+<h1>{{ error_message|default:"Введите данные нового контакта"}}</h1>
+<form action="http://127.0.0.1:8000/contactBook/add/add_new_contact/" method="post">
+	{{ form.as_p }} {% csrf_token %}
 	<input type="submit" value="OK">
 </form>

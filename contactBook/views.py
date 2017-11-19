@@ -5,9 +5,12 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
-from .forms import ContactForm
+from django.template.context_processors import csrf
+from .forms import ContactForm, SearchFormJob, SearchFormSurname, SearchFormTelephone
+from .models import Contact, Job, Post, City, Street
+from django.db.models.query import EmptyQuerySet
 
 def main(request):
 	context = {}
@@ -19,10 +22,11 @@ def search(request):
 
 def add(request):
 	context = {'form': ContactForm()}
-	return render(request, 'add.html', context)
+	context.update(csrf(request))
+	return render(request, 'add.html', context, RequestContext(request))
 
 def add_new(request):
-	if request.method == 'post':
+	if request.method == 'POST':
 		form = ContactForm(request.POST)
 		if form.is_valid():
 			contact = Contact()
@@ -32,51 +36,82 @@ def add_new(request):
 			contact.gender = form.cleaned_data['gender']
 			contact.birthday = form.cleaned_data['birthday']
 			j = form.cleaned_data['job']
-			if isinstance(Job.objects.all().filter(job = j), EmptyQuerySet):
-				new_job = Job(job = j)
+			new_job, created = Job.objects.get_or_create(job = j)
+			if created:
 				new_job.save()
-				contact.job = new_job
-			else:
-				contact.job = Job.objects.all().filter(job = j).get(pk = 1)
+			contact.job = new_job
 			p = form.cleaned_data['post']
-			if isinstance(Post.objects.all().filter(post = p), EmptyQuerySet):
-				new_post = Post(post = p)
+			new_post, created = Post.objects.get_or_create(post = p)
+			if created:
 				new_post.save()
-				contact.post = new_post
-			else:
-				contact.post = Post.objects.all().filter(post = p).get(pk = 1)
+			contact.post = new_post
 			contact.telephone = form.cleaned_data['telephone']
 			contact.email = form.cleaned_data['email']
 			c = form.cleaned_data['city']
-			if isinstance(City.objects.all().filter(city = c), EmptyQuerySet):
-				new_city = City(city = c)
+			new_city, created = City.objects.get_or_create(city = c)
+			if created:
 				new_city.save()
-				contact.city = new_city
-			else:
-				contact.city = City.objects.all().filter(city = c).get(pk = 1)
+			contact.city = new_city
 			s = form.cleaned_data['street']
-			if isinstance(Street.objects.all().filter(street = s), EmptyQuerySet):
-				new_street = Street(street = s)
+			new_street, created = Street.objects.get_or_create(street = s)
+			if created:
 				new_street.save()
-				contact.street = new_street
-			else:
-				contact.street = Street.objects.all().filter(street = s).get(pk = 1)
+			contact.street = new_street
 			contact.building = form.cleaned_data['building']
 			contact.apartment = form.cleaned_data['apartment']
 			contact.save()
-			return HttpResponseRedirect('/thanks/')
-    	else: 
-			context = {'form': ContactForm()}
-	return render(request, 'add.html', context)
+			return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
+		else: 
+			return render(request, 'add.html', {'form': form, 'error_message': "Something wrong"})
+	else:
+		#context = {'form': ContactForm}
+		return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/add')
+		#return render(request, 'add.html', context)
 
 def search_surname(request):
-	context = {}
-	return render(request, 'search_choice.html', context)
+	context = {'form': SearchFormSurname()}
+	return render(request, 'search.html', context)
 
 def search_job(request):
-	context = {}
-	return render(request, 'search_choice.html', context)
+	context = {'form': SearchFormJob()}
+	return render(request, 'search.html', context)
 
 def search_telephone(request):
-	context = {}
-	return render(request, 'search_choice.html', context)
+	context = {'form': SearchFormTelephone()}
+	return render(request, 'search.html', context)
+
+def search_list_surname(request):
+	if request.method == 'POST':
+		form = SearchFormSurname(request.POST)
+		if form.is_valid():
+			if form.cleaned_data['surname'] == 'all':
+				context = {'lis': Contact.objects.all()}
+			else:
+				lis = Contact.objects.all().filter(surname = form.cleaned_data['surname'])
+				context = {'lis': lis}
+			return render(request, 'search_list.html', context)
+	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/search/')
+
+def search_list_job(request):
+	if request.method == 'POST':
+		form = SearchFormJob(request.POST)
+		if form.is_valid():
+			lis = Contact.objects.all().filter(job = Job.objects.get(job = form.cleaned_data['job']).pk)
+			context = {'lis': lis}
+			return render(request, 'search_list.html', context)
+	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/search/job/')
+
+def search_list_telephone(request):
+	if request.method == 'POST':
+		form = SearchFormTelephone(request.POST)
+		if form.is_valid():
+			lis = Contact.objects.all().filter(telephone = form.cleaned_data['telephone'])
+			context = {'lis': lis}
+			return render(request, 'search_list.html', context)
+	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/search/telephone/')
+	
+	
+	
+	
+	
+	
