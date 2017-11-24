@@ -1,0 +1,7 @@
+<meta charset="utf-8">
+<title>Изменение контакта</title>
+<h1>{{ error_message|default:""}}</h1>
+<form action='save/' method="post">
+	{{ form.as_p }} {% csrf_token %}
+	<input type="submit" value="OK">
+</form>

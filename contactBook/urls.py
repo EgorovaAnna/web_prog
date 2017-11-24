@@ -13,4 +13,6 @@ urlpatterns = [
 	url(r'^search/surname/list/$', views.search_list_surname, name = 'search_list_surname'),
 	url(r'^search/job/list/$', views.search_list_job, name = 'search_list_job'),
 	url(r'^search/telephone/list/$', views.search_list_telephone, name = 'search_list_telephone'),
+	url(r'^edit_id=([1-9]+)/$', views.edit, name = 'edit'),
+	url(r'^edit_id=([1-9]+)/save/$', views.save_changes, name = 'save_changes'),
 ]

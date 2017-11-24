@@ -108,9 +108,9 @@ LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'UTC'
 
-USE_I18N = True
+USE_I18N = False#True
 
-USE_L10N = True
+USE_L10N = False#True
 
 USE_TZ = True
 

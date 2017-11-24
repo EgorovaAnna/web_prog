@@ -3,21 +3,22 @@
 <h1>{{ error_message|default:"По вашему запросы найдены:"}}</h1>
 <table border = "3" bordercolor = "black">
 	{% for contact in lis %}
-	<tr>
-		<td>{{ contact.surname }}</td>
-		<td>{{ contact.name }}</td>
-		<td>{{ contact.patronymic }}</td>
-		<td>{{ contact.gender }}</td>
-		<td>{{ contact.birthday }}</td>
-		<td>{{ contact.job.job }}</td>
-		<td>{{ contact.post.post }}</td>
-		<td>{{ contact.telephone }}</td>
-		<td>{{ contact.email }}</td>
-		<td>{{ contact.city.city }}</td>
-		<td>{{ contact.street.street }}</td>
-		<td>{{ contact.building }}</td>
-		<td>{{ contact.appartment }}</td>
-	</tr>
+		<tr>
+			<td>{{ contact.surname }}</td>
+			<td>{{ contact.name }}</td>
+			<td>{{ contact.patronymic }}</td>
+			<td>{{ contact.gender }}</td>
+			<td>{{ contact.birthday }}</td>
+			<td>{{ contact.job.job }}</td>
+			<td>{{ contact.post.post }}</td>
+			<td>{{ contact.telephone }}</td>
+			<td>{{ contact.email }}</td>
+			<td>{{ contact.city.city }}</td>
+			<td>{{ contact.street.street }}</td>
+			<td>{{ contact.building }}</td>
+			<td>{{ contact.appartment }}</td>
+			<td><a href = "{% url 'edit' contact.pk %}">Изменить</a></td>
+		</tr>
 	{% endfor %}
 </table>
 

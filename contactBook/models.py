@@ -22,12 +22,20 @@ class Contact(models.Model):
 	
 class Job(models.Model):
 	job = models.CharField(max_length = 30)
+	def __str__(self):
+		return self.job.encode('utf8')
 	
 class Post(models.Model):
 	post = models.CharField(max_length = 30)
+	def __str__(self):
+		return self.post.encode('utf8')
 	
 class City(models.Model):
 	city = models.CharField(max_length = 30)
+	def __str__(self):
+		return self.city.encode('utf8')
 	
 class Street(models.Model):
 	street = models.CharField(max_length = 30)
+	def __str__(self):
+		return self.street.encode('utf8')
