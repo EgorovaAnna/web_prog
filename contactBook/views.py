@@ -8,8 +8,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from django.template.context_processors import csrf
-from contactBook.forms import ContactForm, SearchFormJob, SearchFormSurname, SearchFormTelephone, EditForm
-from contactBook.models import Contact, Job, Post, City, Street
+from contactBook.forms import *
+from contactBook.models import *
 from django.db.models.query import EmptyQuerySet
 
 def main(request):
@@ -26,6 +26,55 @@ def add(request):
 	#return render(request, 'add.html', context, RequestContext(request))
 	return render(request, 'add.html', context)
 
+def add_job(request):
+	context = {'add_string': 'организации', 'some': 'job', 'form': AddJob()}
+	return render(request, 'add_new_some.html', context)
+
+def add_post(request):
+	context = {'add_string': 'должности', 'some': 'post', 'form': AddPost()}
+	return render(request, 'add_new_some.html', context)
+
+def add_city(request):
+	context = {'add_string': 'города', 'some': 'city', 'form': AddCity()}
+	return render(request, 'add_new_some.html', context)
+
+def add_street(request):
+	context = {'add_string': 'улицы', 'some': 'street', 'form': AddStreet()}
+	return render(request, 'add_new_some.html', context)
+
+def add_new_some(request, some):
+	if request.method == 'POST':
+		if some == 'job':
+			form = AddJob(request.POST)
+			if form.is_valid():
+				some = form.cleaned_data['add']
+				new_job, created = Job.objects.get_or_create(job = some)
+				if created:
+					new_job.save()
+		if some == 'post':
+			form = AddPost(request.POST)
+			if form.is_valid():
+				some = form.cleaned_data['add']
+				new_post, created = Post.objects.get_or_create(post = some)
+				if created:
+					new_post.save()
+		if some == 'city':
+			form = AddCity(request.POST)
+			if form.is_valid():
+				some = form.cleaned_data['add']
+				new_city, created = City.objects.get_or_create(city = some)
+				if created:
+					new_city.save()
+		if some == 'street':
+			form = AddStreet(request.POST)
+			if form.is_valid():
+				some = form.cleaned_data['add']
+				new_street, created = Street.objects.get_or_create(street = some)
+				if created:
+					new_street.save()
+	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
+
+
 def add_new(request):
 	if request.method == 'POST':
 		form = ContactForm(request.POST)
@@ -37,11 +86,15 @@ def add_new(request):
 			contact.gender = form.cleaned_data['gender']
 			contact.birthday = form.cleaned_data['birthday']
 			j = form.cleaned_data['job']
+			if j == None:
+				j = form.cleaned_data['job_new']
 			new_job, created = Job.objects.get_or_create(job = j)
 			if created:
 				new_job.save()
 			contact.job = new_job
 			p = form.cleaned_data['post']
+			if p == None:
+				p = form.cleaned_data['post_new']
 			new_post, created = Post.objects.get_or_create(post = p)
 			if created:
 				new_post.save()
@@ -49,11 +102,15 @@ def add_new(request):
 			contact.telephone = form.cleaned_data['telephone']
 			contact.email = form.cleaned_data['email']
 			c = form.cleaned_data['city']
+			if c == None:
+				c = form.cleaned_data['city_new']
 			new_city, created = City.objects.get_or_create(city = c)
 			if created:
 				new_city.save()
 			contact.city = new_city
 			s = form.cleaned_data['street']
+			if s == None:
+				s = form.cleaned_data['street_new']
 			new_street, created = Street.objects.get_or_create(street = s)
 			if created:
 				new_street.save()
@@ -114,7 +171,7 @@ def search_list_telephone(request):
 def edit(request, id):
 	#form = EditForm(instance = Contact.objects.get(pk = id))
 	contact = Contact.objects.get(pk = id)
-	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job' : contact.job.job, 'post' : contact.post.post, 'city' : contact.city.city, 'street' : contact.street.street, 'building' : contact.building, 'apartment' : contact.apartment})
+	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job_new' : contact.job.job, 'post_new' : contact.post.post, 'city_new' : contact.city.city, 'street_new' : contact.street.street, 'building' : contact.building, 'apartment' : contact.apartment})
 	context = {'form': form, 'error_massage': "Измените необходимые поля"}
 	return render(request, 'edit.html', context)
 
@@ -129,11 +186,15 @@ def save_changes(request, id):
 			contact.gender = form.cleaned_data['gender']
 			contact.birthday = form.cleaned_data['birthday']
 			j = form.cleaned_data['job']
+			if j == None:
+				j = form.cleaned_data['job_new']
 			new_job, created = Job.objects.get_or_create(job = j)
 			if created:
 				new_job.save()
 			contact.job = new_job
 			p = form.cleaned_data['post']
+			if p == None:
+				p = form.cleaned_data['post_new']
 			new_post, created = Post.objects.get_or_create(post = p)
 			if created:
 				new_post.save()
@@ -141,11 +202,15 @@ def save_changes(request, id):
 			contact.telephone = form.cleaned_data['telephone']
 			contact.email = form.cleaned_data['email']
 			c = form.cleaned_data['city']
+			if c == None:
+				c = form.cleaned_data['city_new']
 			new_city, created = City.objects.get_or_create(city = c)
 			if created:
 				new_city.save()
 			contact.city = new_city
 			s = form.cleaned_data['street']
+			if s == None:
+				s = form.cleaned_data['street_new']
 			new_street, created = Street.objects.get_or_create(street = s)
 			if created:
 				new_street.save()

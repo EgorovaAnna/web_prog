@@ -1,0 +1,10 @@
+<meta charset="utf-8">
+<title>Добавление {{ add_string }}</title>
+<h1>{{ error_message|default:""}}</h1>
+<form action="{% url 'add_new_some' some %}" method="post">
+	{{ form }} {% csrf_token %}
+	<input type="submit" value="Добавить">
+</form>
+<a href = "http://127.0.0.1:8000/contactBook/">
+	Назад
+</a>
