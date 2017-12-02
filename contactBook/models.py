@@ -15,7 +15,6 @@ class Contact(models.Model):
 	post = models.ForeignKey('Post', on_delete=models.CASCADE)
 	telephone = models.CharField(max_length = 30)
 	email = models.EmailField()
-	city = models.ForeignKey('City', on_delete=models.CASCADE)
 	street = models.ForeignKey('Street', on_delete=models.CASCADE)
 	building = models.CharField(max_length = 5)
 	apartment = models.PositiveSmallIntegerField()
@@ -37,5 +36,6 @@ class City(models.Model):
 	
 class Street(models.Model):
 	street = models.CharField(max_length = 30)
+	city = models.ForeignKey('City', on_delete=models.CASCADE)
 	def __str__(self):
 		return self.street.encode('utf8')

@@ -68,8 +68,12 @@ def add_new_some(request, some):
 		if some == 'street':
 			form = AddStreet(request.POST)
 			if form.is_valid():
-				some = form.cleaned_data['add']
-				new_street, created = Street.objects.get_or_create(street = some)
+				some_c = form.cleaned_data['add_c']
+				some_s = form.cleaned_data['add_s']
+				new_city, created = City.objects.get_or_create(city = some_c)
+				if created:
+					new_city.save()
+				new_street, created = Street.objects.get_or_create(city = new_city, street = some_s)
 				if created:
 					new_street.save()
 	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
@@ -107,11 +111,10 @@ def add_new(request):
 			new_city, created = City.objects.get_or_create(city = c)
 			if created:
 				new_city.save()
-			contact.city = new_city
 			s = form.cleaned_data['street']
 			if s == None:
 				s = form.cleaned_data['street_new']
-			new_street, created = Street.objects.get_or_create(street = s)
+			new_street, created = Street.objects.get_or_create(city = new_city, street = s)
 			if created:
 				new_street.save()
 			contact.street = new_street
@@ -171,7 +174,7 @@ def search_list_telephone(request):
 def edit(request, id):
 	#form = EditForm(instance = Contact.objects.get(pk = id))
 	contact = Contact.objects.get(pk = id)
-	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job_new' : contact.job.job, 'post_new' : contact.post.post, 'city_new' : contact.city.city, 'street_new' : contact.street.street, 'building' : contact.building, 'apartment' : contact.apartment})
+	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job_new' : contact.job.job, 'post_new' : contact.post.post, 'city_new' : contact.street.city.city, 'street_new' : contact.street.street, 'building' : contact.building, 'apartment' : contact.apartment})
 	context = {'form': form, 'error_massage': "Измените необходимые поля"}
 	return render(request, 'edit.html', context)
 
@@ -207,11 +210,10 @@ def save_changes(request, id):
 			new_city, created = City.objects.get_or_create(city = c)
 			if created:
 				new_city.save()
-			contact.city = new_city
 			s = form.cleaned_data['street']
 			if s == None:
 				s = form.cleaned_data['street_new']
-			new_street, created = Street.objects.get_or_create(street = s)
+			new_street, created = Street.objects.get_or_create(city = new_city, street = s)
 			if created:
 				new_street.save()
 			contact.street = new_street

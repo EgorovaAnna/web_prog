@@ -52,7 +52,8 @@ class AddCity(forms.Form):
 	add = forms.CharField(label = 'Введите город, который хотите добавить', max_length = 30)
 	
 class AddStreet(forms.Form):
-	add = forms.CharField(label = 'Введите улицу, которую хотите добавить', max_length = 30)
+	add_c = forms.CharField(label = 'Введите город, в котором хотите добавить улицу', max_length = 30)
+	add_s = forms.CharField(label = 'Введите улицу, которую хотите добавить', max_length = 30)
 
 class EditForm(forms.Form):
 	def __init__(self, contact):
