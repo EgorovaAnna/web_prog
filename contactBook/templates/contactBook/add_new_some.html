@@ -8,3 +8,16 @@
 <a href = "http://127.0.0.1:8000/contactBook/">
 	Назад
 </a>
+<hr align="left" size="3" width="1000" color="#000000" noshade>
+<div class='scrolling'>
+	<table border = "3" bordercolor = "black">
+		{% for count in have %}
+			<tr>
+				{% if street %}
+					<td>{{count.city.city}}</td>
+				{% endif %}
+				<td>{{count}}</td>
+			</tr>
+		{% endfor %}
+	</table>
+</div>

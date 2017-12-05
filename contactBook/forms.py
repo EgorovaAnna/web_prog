@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django import forms
-#from django.forms import ModelForm
+from django.forms import ComboField
 from contactBook. models import Contact, Job, Post, City, Street
 
 class ContactForm(forms.Form):
@@ -52,7 +52,7 @@ class AddCity(forms.Form):
 	add = forms.CharField(label = 'Введите город, который хотите добавить', max_length = 30)
 	
 class AddStreet(forms.Form):
-	add_c = forms.CharField(label = 'Введите город, в котором хотите добавить улицу', max_length = 30)
+	add_c = forms.ModelChoiceField(label = 'Город', queryset = City.objects.all(), empty_label="Другое")
 	add_s = forms.CharField(label = 'Введите улицу, которую хотите добавить', max_length = 30)
 
 class EditForm(forms.Form):

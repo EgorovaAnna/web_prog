@@ -10,14 +10,14 @@ class Contact(models.Model):
 	name = models.CharField(max_length = 30)
 	patronymic = models.CharField(max_length = 30)
 	gender = models.CharField(max_length = 1, default = 'N')
-	birthday = models.DateField();
+	birthday = models.DateField(null=True);
 	job = models.ForeignKey('Job', on_delete=models.CASCADE)
 	post = models.ForeignKey('Post', on_delete=models.CASCADE)
 	telephone = models.CharField(max_length = 30)
-	email = models.EmailField()
+	email = models.EmailField(null=True)
 	street = models.ForeignKey('Street', on_delete=models.CASCADE)
-	building = models.CharField(max_length = 5)
-	apartment = models.PositiveSmallIntegerField()
+	building = models.CharField(max_length = 5, null=True)
+	apartment = models.PositiveSmallIntegerField(null=True)
 	
 class Job(models.Model):
 	job = models.CharField(max_length = 30)

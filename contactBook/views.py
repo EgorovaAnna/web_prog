@@ -27,20 +27,25 @@ def add(request):
 	return render(request, 'add.html', context)
 
 def add_job(request):
-	context = {'add_string': 'организации', 'some': 'job', 'form': AddJob()}
+	context = {'add_string': 'организации', 'some': 'job', 'form': AddJob(), 'have': Job.objects.all(), 'street': False}
 	return render(request, 'add_new_some.html', context)
 
 def add_post(request):
-	context = {'add_string': 'должности', 'some': 'post', 'form': AddPost()}
+	context = {'add_string': 'должности', 'some': 'post', 'form': AddPost(), 'have': Post.objects.all(), 'street': False}
 	return render(request, 'add_new_some.html', context)
 
 def add_city(request):
-	context = {'add_string': 'города', 'some': 'city', 'form': AddCity()}
+	context = {'add_string': 'города', 'some': 'city', 'form': AddCity(), 'have': City.objects.all(), 'street': False}
 	return render(request, 'add_new_some.html', context)
 
 def add_street(request):
-	context = {'add_string': 'улицы', 'some': 'street', 'form': AddStreet()}
+	context = {'add_string': 'улицы', 'some': 'street', 'form': AddStreet(), 'have': Street.objects.all().order_by('city'), 'street': True}
 	return render(request, 'add_new_some.html', context)
+
+def delete(request, id):
+	contact = Contact.objects.get(pk = id)
+	contact.delete()
+	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
 
 def add_new_some(request, some):
 	if request.method == 'POST':
@@ -103,7 +108,13 @@ def add_new(request):
 			if created:
 				new_post.save()
 			contact.post = new_post
-			contact.telephone = form.cleaned_data['telephone']
+			phone = form.cleaned_data['telephone']
+			if re.match(r'[+7, 8]{1}[0-9]{10}', phone):
+				contact.telephone =  phone
+			elif re.match(r'\+?[7, 8][-, (]*\d{3}[-, )]*\d{3}-?\d{2}-?\d{2}', phone):
+				contact.telephone = re.findall(r'([+7, \d+])', phone)
+			else:
+				return render(request, 'add.html', {'form': form, 'error_message': "Введите корректный номер телефона"})
 			contact.email = form.cleaned_data['email']
 			c = form.cleaned_data['city']
 			if c == None:
@@ -175,7 +186,7 @@ def edit(request, id):
 	#form = EditForm(instance = Contact.objects.get(pk = id))
 	contact = Contact.objects.get(pk = id)
 	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job_new' : contact.job.job, 'post_new' : contact.post.post, 'city_new' : contact.street.city.city, 'street_new' : contact.street.street, 'building' : contact.building, 'apartment' : contact.apartment})
-	context = {'form': form, 'error_massage': "Измените необходимые поля"}
+	context = {'form': form, 'error_massage': "Измените необходимые поля", 'id': id}
 	return render(request, 'edit.html', context)
 
 def save_changes(request, id):
