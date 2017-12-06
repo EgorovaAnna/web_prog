@@ -3,7 +3,7 @@
 <h1>{{ error_message|default:"Введите данные нового контакта"}}</h1>
 <form action="add_new_contact/" method="post">
 	{{ form.as_p }} {% csrf_token %}
-	<input type="submit" value="OK">
+	<input type="submit" value="Сохранить">
 </form>
 <a href = "http://127.0.0.1:8000/contactBook/">
 	Назад

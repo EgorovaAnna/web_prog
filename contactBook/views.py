@@ -11,6 +11,7 @@ from django.template.context_processors import csrf
 from contactBook.forms import *
 from contactBook.models import *
 from django.db.models.query import EmptyQuerySet
+import re
 
 def main(request):
 	context = {}
@@ -22,8 +23,6 @@ def search(request):
 
 def add(request):
 	context = {'form': ContactForm()}
-	#context.update(csrf(request))
-	#return render(request, 'add.html', context, RequestContext(request))
 	return render(request, 'add.html', context)
 
 def add_job(request):
@@ -97,6 +96,8 @@ def add_new(request):
 			j = form.cleaned_data['job']
 			if j == None:
 				j = form.cleaned_data['job_new']
+				if j == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите место работы"})
 			new_job, created = Job.objects.get_or_create(job = j)
 			if created:
 				new_job.save()
@@ -104,6 +105,8 @@ def add_new(request):
 			p = form.cleaned_data['post']
 			if p == None:
 				p = form.cleaned_data['post_new']
+				if p == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите должность"})
 			new_post, created = Post.objects.get_or_create(post = p)
 			if created:
 				new_post.save()
@@ -119,12 +122,16 @@ def add_new(request):
 			c = form.cleaned_data['city']
 			if c == None:
 				c = form.cleaned_data['city_new']
+				if c == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите город"})
 			new_city, created = City.objects.get_or_create(city = c)
 			if created:
 				new_city.save()
 			s = form.cleaned_data['street']
 			if s == None:
 				s = form.cleaned_data['street_new']
+				if s == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите улицу"})
 			new_street, created = Street.objects.get_or_create(city = new_city, street = s)
 			if created:
 				new_street.save()
@@ -136,9 +143,7 @@ def add_new(request):
 		else: 
 			return render(request, 'add.html', {'form': form, 'error_message': "Something wrong"})
 	else:
-		#context = {'form': ContactForm}
 		return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/add')
-		#return render(request, 'add.html', context)
 
 def search_surname(request):
 	context = {'form': SearchFormSurname()}
@@ -202,6 +207,8 @@ def save_changes(request, id):
 			j = form.cleaned_data['job']
 			if j == None:
 				j = form.cleaned_data['job_new']
+				if j == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите место работы"})
 			new_job, created = Job.objects.get_or_create(job = j)
 			if created:
 				new_job.save()
@@ -209,21 +216,33 @@ def save_changes(request, id):
 			p = form.cleaned_data['post']
 			if p == None:
 				p = form.cleaned_data['post_new']
+				if p == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите должность"})
 			new_post, created = Post.objects.get_or_create(post = p)
 			if created:
 				new_post.save()
 			contact.post = new_post
-			contact.telephone = form.cleaned_data['telephone']
+			phone = form.cleaned_data['telephone']
+			if re.match(r'[+7, 8]{1}[0-9]{10}', phone):
+				contact.telephone =  phone
+			elif re.match(r'\+?[7, 8][-, (]*\d{3}[-, )]*\d{3}-?\d{2}-?\d{2}', phone):
+				contact.telephone = re.findall(r'([+7, \d+])', phone)
+			else:
+				return render(request, 'add.html', {'form': form, 'error_message': "Введите корректный номер телефона"})
 			contact.email = form.cleaned_data['email']
 			c = form.cleaned_data['city']
 			if c == None:
 				c = form.cleaned_data['city_new']
+				if c == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите город"})
 			new_city, created = City.objects.get_or_create(city = c)
 			if created:
 				new_city.save()
 			s = form.cleaned_data['street']
 			if s == None:
 				s = form.cleaned_data['street_new']
+				if s == None:
+					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите улицу"})
 			new_street, created = Street.objects.get_or_create(city = new_city, street = s)
 			if created:
 				new_street.save()
@@ -235,7 +254,6 @@ def save_changes(request, id):
 		else: 
 			return render(request, 'edit.html', {'form': form, 'error_message': "Something wrong"})
 	else:
-		#context = {'form': ContactForm}
 		return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/edit_id='+id)
 	
 	

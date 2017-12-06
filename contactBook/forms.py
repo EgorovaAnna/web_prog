@@ -11,20 +11,16 @@ class ContactForm(forms.Form):
 	CHOICE = (('N', 'не указан'), ('M', 'мужской'), ('W', 'женский'))
 	gender = forms.ChoiceField(label = 'Пол', choices = CHOICE, required = False)
 	birthday = forms.DateField(label = 'Дата рождения', required = False, help_text = 'гггг-мм-дд')
-	#job = forms.CharField(label = 'Место работы', max_length = 30)
 	job = forms.ModelChoiceField(label = 'Место работы', queryset = Job.objects.all(), empty_label="Другое", required = False)
-	job_new =  forms.CharField(label = '', max_length = 30, required = False)
-	#post = forms.CharField(label = 'Должность', max_length = 30)
+	job_new =  forms.CharField(label = 'Организации нет в списке? Добавьте', max_length = 30, required = False)
 	post = forms.ModelChoiceField(label = 'Должность', queryset = Post.objects.all(), empty_label="Другое", required = False)
-	post_new =  forms.CharField(label = '', max_length = 30, required = False)
+	post_new =  forms.CharField(label = 'Должности нет в списке? Добавьте', max_length = 30, required = False)
 	telephone = forms.CharField(label = 'Телефон', max_length = 30)
 	email = forms.EmailField(label = 'E-mail', required = False)
-	#city = forms.CharField(label = 'Город', max_length = 30)
 	city = forms.ModelChoiceField(label = 'Город', queryset = City.objects.all(), empty_label="Другое", required = False)
-	city_new =  forms.CharField(label = '', max_length = 30, required = False)
-	#street = forms.CharField(label = 'Улица', max_length = 30)
+	city_new =  forms.CharField(label = 'Города нет в списке? Добавьте', max_length = 30, required = False)
 	street = forms.ModelChoiceField(label = 'Улица', queryset = Street.objects.all(), empty_label="Другое", required = False)
-	street_new =  forms.CharField(label = '', max_length = 30, required = False)
+	street_new =  forms.CharField(label = 'Улицы нет в списке? Добавьте', max_length = 30, required = False)
 	building = forms.CharField(label = 'Дом', max_length = 5, required = False)
 	apartment = forms.IntegerField(label = 'Квартира', required = False)
 	
@@ -37,11 +33,6 @@ class SearchFormJob(forms.Form):
 class SearchFormTelephone(forms.Form):
 	search = forms.CharField(label = 'Введите телефон', max_length = 30)
 	
-#class EditForm(ModelForm):
-#	class Meta:
-#		model = Contact
-#		fields = ['surname', 'name', 'patronymic', 'gender', 'birthday', 'job', 'post', 'telephone', 'email', 'city', 'street', 'building', 'apartment']
-
 class AddJob(forms.Form):
 	add = forms.CharField(label = 'Введите организацию, которую хотите добавить', max_length = 30)
 	
