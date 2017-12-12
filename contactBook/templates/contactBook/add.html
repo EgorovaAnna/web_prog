@@ -1,10 +1,28 @@
 <meta charset="utf-8">
 <title>Добавление контакта</title>
-<h1>{{ error_message|default:"Введите данные нового контакта"}}</h1>
-<form action="add_new_contact/" method="post">
-	{{ form.as_p }} {% csrf_token %}
-	<input type="submit" value="Сохранить">
-</form>
-<a href = "http://127.0.0.1:8000/contactBook/">
-	Назад
-</a>
+<body bgcolor="LightCyan" vlink="black">
+	<h1><font color="DarkCyan" face="times">{{ error_message|default:"Введите данные нового контакта"}}</font></h1>
+	<h3><font color="#000000" face="times">{{ error_massage|default:'' }}</font></h3>
+	<br>
+	<font size=3 color="DarkCyan" face="times"><form action="add_new_contact/" method="post">
+		{% for field in form %}
+			<p>
+				{{ field.label_tag }} {{ field }}
+				{% if field.name == 'job' %}
+					<button formaction = "{% url 'add_some_doesnt_exist' 'job+' cts %}" formnovalidate>Организации нет в списке? Добавьте</button>
+				{% elif field.name == 'post' %}
+					<button formaction = "{% url 'add_some_doesnt_exist' 'post+' cts %}" formnovalidate>Должности нет в списке? Добавьте</button>
+				{% elif field.name == 'city' %}
+					<button formaction = "{% url 'add_some_doesnt_exist' 'city+' cts %}" formnovalidate>Города нет в списке? Добавьте</button>
+				{% elif field.name == 'street' %}
+					<button formaction = "{% url 'add_some_doesnt_exist' 'street+' cts %}" formnovalidate>Улицы нет в списке? Добавьте</button>
+				{% endif %}
+			</p>
+		{% endfor %}
+		{% csrf_token %}
+		<input type="submit" value="Сохранить" formvalidate>
+	</form></font>
+	<a href = "http://127.0.0.1:8000/contactBook/">
+		Назад
+	</a>
+</body>

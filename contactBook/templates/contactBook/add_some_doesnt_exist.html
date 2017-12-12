@@ -2,14 +2,14 @@
 <title>Добавление {{ add_string }}</title>
 <body bgcolor="LightCyan" vlink="black">
 	<font size=5 color="DarkCyan" face="times">
-		<h3>{{ error_message|default:""}}</h3>
-		<form action="{% url 'add_new_some' some %}" method="post">
+		<h1>{{ error_message|default:""}}</h1>
+		<form action="{% url 'add_new_some' some cts%}" method="post"> 
 			{{ form }} {% csrf_token %}
 			<input type="submit" value="Добавить">
 		</form>
-			<a href = "http://127.0.0.1:8000/contactBook/">
-				Назад
-			</a>
+		<a href = "{% url 'add' cts %}">
+			Назад
+		</a>
 		<hr align="left" size="3" width="1000" color="#000000" noshade>
 		<div class='scrolling'>
 			<table border = "3" bordercolor = "black" noshade>

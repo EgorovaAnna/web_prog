@@ -1,28 +1,45 @@
 <meta charset="utf-8">
 <title>Результаты поиска</title>
-<h1>{{ error_message|default:"По вашему запросы найдены:"}}</h1>
-<table border = "3" bordercolor = "black">
-	{% for contact in lis %}
-		<tr>
-			<td>{{ contact.surname }}</td>
-			<td>{{ contact.name }}</td>
-			<td>{{ contact.patronymic }}</td>
-			<td>{{ contact.gender }}</td>
-			<td>{{ contact.birthday }}</td>
-			<td>{{ contact.job.job }}</td>
-			<td>{{ contact.post.post }}</td>
-			<td>{{ contact.telephone }}</td>
-			<td>{{ contact.email }}</td>
-			<td>{{ contact.street.city.city }}</td>
-			<td>{{ contact.street.street }}</td>
-			<td>{{ contact.building }}</td>
-			<td>{{ contact.appartment }}</td>
-			<td><a href = "{% url 'edit' contact.pk %}">Изменить</a></td>
-		</tr>
-	{% endfor %}
-</table>
-<a href = "http://127.0.0.1:8000/contactBook/">
-	К началу
-</a>
+<body bgcolor="LightCyan" vlink="black">
+	<font size=5 color="DarkCyan" face="times">
+		<h3>{{ error_message|default:"По вашему запросы найдены:"}}</h3>
+		<table border = "3" bordercolor = "black">
+			<th>Фамилия</th>
+			<th>Имя</th>
+			<th>Отчество</th>
+			<th>Пол</th>
+			<th>Дата рождения</th>
+			<th>Место работы</th>
+			<th>Должность</th>
+			<th>Телефон</th>
+			<th>Электронная почта</th>
+			<th>Город</th>
+			<th>Улица</th>
+			<th>Дом</th>
+			<th>Квартира</th>
+			{% for contact in lis %}
+				<tr>
+					<td>{{ contact.surname }}</td>
+					<td>{{ contact.name }}</td>
+					<td>{{ contact.patronymic }}</td>
+					<td>{{ contact.gender }}</td>
+					<td>{{ contact.birthday|date:"d m Y" }}</td>
+					<td>{{ contact.job.job }}</td>
+					<td>{{ contact.post.post }}</td>
+					<td>{{ contact.telephone }}</td>
+					<td>{{ contact.email|default:'' }}</td>
+					<td>{{ contact.street.city.city }}</td>
+					<td>{{ contact.street.street }}</td>
+					<td>{{ contact.building|default:'' }}</td>
+					<td>{{ contact.apartment|default:'' }}</td>
+					<td><a href = "{% url 'edit' contact.pk %}">Изменить</a></td>
+				</tr>
+			{% endfor %}
+		</table>
+		<a href = "http://127.0.0.1:8000/contactBook/">
+			К началу
+		</a>
+	</font>
+</body>
 
 

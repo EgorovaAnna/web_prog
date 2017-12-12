@@ -1,11 +1,15 @@
 <meta charset="utf-8">
 <title>Изменение контакта</title>
-<h1>{{ error_message|default:""}}</h1>
-<form action='save/' method="post">
-	{{ form.as_p }} {% csrf_token %}
-	<input type = "submit" value="Сохранить">
-	<button formaction = "{% url 'delete' id %}">Удалить</button>	
-</form>
-<a href = "http://127.0.0.1:8000/contactBook/">
-	К началу
-</a>
+<body bgcolor="LightCyan" vlink="black">
+	<font size=3 color="DarkCyan" face="times">
+		<h3>{{ error_message|default:""}}</h3>
+		<form action='save/' method="post">
+			{{ form.as_p }} {% csrf_token %}
+			<input type = "submit" value="Сохранить">
+			<button formaction = "{% url 'delete' id %}">Удалить</button>	
+		</form>
+		<a href = "http://127.0.0.1:8000/contactBook/">
+			К началу
+		</a>
+	</font>
+</body>

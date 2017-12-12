@@ -3,24 +3,21 @@ from __future__ import unicode_literals
 from django import forms
 from django.forms import ComboField
 from contactBook. models import Contact, Job, Post, City, Street
+from django.core.exceptions import ValidationError
 
 class ContactForm(forms.Form):
 	surname = forms.CharField(label = u'Фамилия', max_length = 30)
 	name = forms.CharField(label = 'Имя', max_length = 30)
 	patronymic = forms.CharField(label = 'Отчество', max_length = 30)
-	CHOICE = (('N', 'не указан'), ('M', 'мужской'), ('W', 'женский'))
-	gender = forms.ChoiceField(label = 'Пол', choices = CHOICE, required = False)
+	CHOICE = (('', 'не указан'), ('Мужской', 'мужской'), ('Женский', 'женский'))
+	gender = forms.ChoiceField(label = 'Пол', choices = CHOICE, widget = forms.RadioSelect, required = False)
 	birthday = forms.DateField(label = 'Дата рождения', required = False, help_text = 'гггг-мм-дд')
-	job = forms.ModelChoiceField(label = 'Место работы', queryset = Job.objects.all(), empty_label="Другое", required = False)
-	job_new =  forms.CharField(label = 'Организации нет в списке? Добавьте', max_length = 30, required = False)
-	post = forms.ModelChoiceField(label = 'Должность', queryset = Post.objects.all(), empty_label="Другое", required = False)
-	post_new =  forms.CharField(label = 'Должности нет в списке? Добавьте', max_length = 30, required = False)
+	job = forms.ModelChoiceField(label = 'Место работы', queryset = Job.objects.all(), empty_label="Другое")
+	post = forms.ModelChoiceField(label = 'Должность', queryset = Post.objects.all(), empty_label="Другое")
 	telephone = forms.CharField(label = 'Телефон', max_length = 30)
 	email = forms.EmailField(label = 'E-mail', required = False)
-	city = forms.ModelChoiceField(label = 'Город', queryset = City.objects.all(), empty_label="Другое", required = False)
-	city_new =  forms.CharField(label = 'Города нет в списке? Добавьте', max_length = 30, required = False)
-	street = forms.ModelChoiceField(label = 'Улица', queryset = Street.objects.all(), empty_label="Другое", required = False)
-	street_new =  forms.CharField(label = 'Улицы нет в списке? Добавьте', max_length = 30, required = False)
+	city = forms.ModelChoiceField(label = 'Город', queryset = City.objects.all(), empty_label="Другое")
+	street = forms.ModelChoiceField(label = 'Улица', queryset = Street.objects.all(), empty_label="Другое")
 	building = forms.CharField(label = 'Дом', max_length = 5, required = False)
 	apartment = forms.IntegerField(label = 'Квартира', required = False)
 	
@@ -45,6 +42,9 @@ class AddCity(forms.Form):
 class AddStreet(forms.Form):
 	add_c = forms.ModelChoiceField(label = 'Город', queryset = City.objects.all(), empty_label="Другое")
 	add_s = forms.CharField(label = 'Введите улицу, которую хотите добавить', max_length = 30)
+	
+class AddStreetCity(forms.Form):
+	add_s = forms.CharField(label = 'Введите улицу, которую хотите добавить в выбранном городе', max_length = 30)	
 
 class EditForm(forms.Form):
 	def __init__(self, contact):

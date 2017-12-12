@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # Create your views here.
 
@@ -12,6 +12,7 @@ from contactBook.forms import *
 from contactBook.models import *
 from django.db.models.query import EmptyQuerySet
 import re
+import func
 
 def main(request):
 	context = {}
@@ -21,10 +22,42 @@ def search(request):
 	context = {}
 	return render(request, 'search_choice.html', context)
 
-def add(request):
-	context = {'form': ContactForm()}
+def add(request, cts):
+	if cts:
+		if re.search(r'/', cts):
+			cts = cts[0:-1]
+		cont = ContactToSave.objects.get(pk = cts)
+		form = ContactForm(initial = {'surname': cont.surname, 'name' : cont.name, 'patronymic' : cont.patronymic, 'gender' : cont.gender, 'birthday' : cont.birthday, 'email' : cont.email, 'telephone' : cont.telephone, 'job' : cont.job, 'post' : cont.post, 'city' : cont.city, 'street' : cont.street, 'building' : cont.building, 'apartment' : cont.apartment})
+		context = {'form': form, 'cts': cts, 'error_massage': cont.error}
+	else:
+		form = ContactForm()
+		context = {'form': form}
 	return render(request, 'add.html', context)
 
+def add_some_doesnt_exist(request, some, id):
+	if request.method == 'POST':
+		if id:
+			if re.search(r'/', id):
+				id = id[0:-1]
+			cts = ContactToSave.objects.get(pk = id)
+			cts = func.initial(request, cts)
+		else:
+			cts = func.initial(request)
+		cts.save()
+		if some == 'job+':
+			context = {'cts': cts.pk, 'add_string': 'организации', 'some': 'job+', 'form': AddJob(), 'have': Job.objects.all()}
+		elif some == 'post+':
+			context = {'cts': cts.pk, 'add_string': 'должности', 'some': 'post+', 'form': AddPost(), 'have': Post.objects.all()}
+		elif some == 'city+':
+			context = {'cts': cts.pk, 'add_string': 'города', 'some': 'city+', 'form': AddCity(), 'have': City.objects.all()}
+		elif some == 'street+':
+			if request.POST['city'] == '':
+				context = {'cts': cts.pk, 'add_string': 'улицы', 'some': 'street+', 'form': AddStreet(), 'have': Street.objects.all().order_by('city'), 'street': True}
+			else:
+				formcity = request.POST['city']
+				context = {'cts': cts.pk, 'add_string': 'улицы', 'some': 'street+', 'form': AddStreetCity(), 'have': Street.objects.filter(city = formcity).order_by('street'), 'street': True}
+		return render(request, 'add_some_doesnt_exist.html', context)
+				
 def add_job(request):
 	context = {'add_string': 'организации', 'some': 'job', 'form': AddJob(), 'have': Job.objects.all(), 'street': False}
 	return render(request, 'add_new_some.html', context)
@@ -46,102 +79,94 @@ def delete(request, id):
 	contact.delete()
 	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
 
-def add_new_some(request, some):
+def add_new_some(request, some, cts = False):
 	if request.method == 'POST':
-		if some == 'job':
-			form = AddJob(request.POST)
-			if form.is_valid():
-				some = form.cleaned_data['add']
-				new_job, created = Job.objects.get_or_create(job = some)
-				if created:
-					new_job.save()
-		if some == 'post':
-			form = AddPost(request.POST)
-			if form.is_valid():
-				some = form.cleaned_data['add']
-				new_post, created = Post.objects.get_or_create(post = some)
-				if created:
-					new_post.save()
-		if some == 'city':
-			form = AddCity(request.POST)
-			if form.is_valid():
-				some = form.cleaned_data['add']
-				new_city, created = City.objects.get_or_create(city = some)
-				if created:
-					new_city.save()
-		if some == 'street':
-			form = AddStreet(request.POST)
-			if form.is_valid():
-				some_c = form.cleaned_data['add_c']
-				some_s = form.cleaned_data['add_s']
-				new_city, created = City.objects.get_or_create(city = some_c)
-				if created:
-					new_city.save()
-				new_street, created = Street.objects.get_or_create(city = new_city, street = some_s)
-				if created:
-					new_street.save()
+		start = True
+		form = request.POST
+		new_job = None
+		new_post = None
+		new_city = None
+		new_street = None
+		if cts:
+			if re.search(r'/', cts):
+				cts = cts[0:-1]
+			start = False
+			cts = ContactToSave.objects.get(pk = cts)
+		if some == 'job' or some == 'job+':
+			some = form.get('add')
+			new_job, created = Job.objects.get_or_create(job = some)
+			if created and re.search(r'[\S]', some):
+				new_job.save()
+			if not start:
+				cts.job = new_job
+		if some == 'post' or some == 'post+':
+			some = form.get('add')
+			new_post, created = Post.objects.get_or_create(post = some)
+			if created and re.search(r'[\S]', some):
+				new_post.save()
+			if not start:
+				cts.post = new_post
+		if some == 'city' or some == 'city+':
+			some = form.get('add')
+			new_city, created = City.objects.get_or_create(city = some)
+			if created and re.search(r'[\S]', some):
+				new_city.save()
+			if not start:
+				cts.city = new_city
+		if some == 'street' or some == 'street+':
+			if not start and cts.city:
+				some_c = cts.city.pk
+			else:
+				some_c = form.get('add_c')
+			some_s = form.get('add_s')
+			new_city = City.objects.get(pk = some_c)
+			new_street, created = Street.objects.get_or_create(city = new_city, street = some_s)
+			if created and re.search(r'[\S]', some):
+				new_street.save()
+			if not start:
+				cts.city = new_city
+				cts.street = new_street
+		if start:
+			return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
+		else:
+			cts.save()
+			return redirect('http://127.0.0.1:8000/contactBook/add/{}/'.format(cts.pk))
 	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
 
 
-def add_new(request):
+def add_new(request, id):
 	if request.method == 'POST':
 		form = ContactForm(request.POST)
+		if id and re.search(r'/', id):
+			id = id[0:-1]
 		if form.is_valid():
-			contact = Contact()
-			contact.surname = form.cleaned_data['surname']
-			contact.name = form.cleaned_data['name']
-			contact.patronymic = form.cleaned_data['patronymic']
-			contact.gender = form.cleaned_data['gender']
-			contact.birthday = form.cleaned_data['birthday']
-			j = form.cleaned_data['job']
-			if j == None:
-				j = form.cleaned_data['job_new']
-				if j == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите место работы"})
-			new_job, created = Job.objects.get_or_create(job = j)
-			if created:
-				new_job.save()
-			contact.job = new_job
-			p = form.cleaned_data['post']
-			if p == None:
-				p = form.cleaned_data['post_new']
-				if p == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите должность"})
-			new_post, created = Post.objects.get_or_create(post = p)
-			if created:
-				new_post.save()
-			contact.post = new_post
-			phone = form.cleaned_data['telephone']
-			if re.match(r'[+7, 8]{1}[0-9]{10}', phone):
-				contact.telephone =  phone
-			elif re.match(r'\+?[7, 8][-, (]*\d{3}[-, )]*\d{3}-?\d{2}-?\d{2}', phone):
-				contact.telephone = re.findall(r'([+7, \d+])', phone)
-			else:
-				return render(request, 'add.html', {'form': form, 'error_message': "Введите корректный номер телефона"})
-			contact.email = form.cleaned_data['email']
-			c = form.cleaned_data['city']
-			if c == None:
-				c = form.cleaned_data['city_new']
-				if c == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите город"})
-			new_city, created = City.objects.get_or_create(city = c)
-			if created:
-				new_city.save()
-			s = form.cleaned_data['street']
-			if s == None:
-				s = form.cleaned_data['street_new']
-				if s == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите улицу"})
-			new_street, created = Street.objects.get_or_create(city = new_city, street = s)
-			if created:
-				new_street.save()
-			contact.street = new_street
-			contact.building = form.cleaned_data['building']
-			contact.apartment = form.cleaned_data['apartment']
+			er, contact = func.check(form)
+			if er:
+				if id:
+					cont = ContactToSave.objects.get(pk = id)
+					cont = func.initial(request, cont)
+				else:
+					cont = func.initial(request)
+				if er == 'telephone':
+					cont.error = "Введите корректный номер телефона"
+				elif er == 'street':
+					cont.error = "Улицы {} нет в городе {}".format(cont.street.street, cont.city.city)
+				cont.save()
+				return redirect('add', cont.pk)
 			contact.save()
+			if id:
+				cont = ContactToSave.objects.get(pk = id)
+				cont.delete()
 			return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
-		else: 
-			return render(request, 'add.html', {'form': form, 'error_message': "Something wrong"})
+		else:
+			if id:
+				cts = ContactToSave.objects.get(pk = id)
+				cts = func.initial(request, cts)
+				cts.save()
+			else:
+				cts = func.initial(request)
+				cts.save()
+			return redirect('add', cts.pk)
 	else:
 		return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/add')
 
@@ -188,9 +213,8 @@ def search_list_telephone(request):
 	return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/search/telephone/')
 
 def edit(request, id):
-	#form = EditForm(instance = Contact.objects.get(pk = id))
 	contact = Contact.objects.get(pk = id)
-	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job_new' : contact.job.job, 'post_new' : contact.post.post, 'city_new' : contact.street.city.city, 'street_new' : contact.street.street, 'building' : contact.building, 'apartment' : contact.apartment})
+	form = ContactForm(initial = {'surname': contact.surname, 'name' : contact.name, 'patronymic' : contact.patronymic, 'gender' : contact.gender, 'birthday' : contact.birthday, 'email' : contact.email, 'telephone' : contact.telephone, 'job' : contact.job, 'post' : contact.post, 'city' : contact.street.city, 'street' : contact.street, 'building' : contact.building, 'apartment' : contact.apartment})
 	context = {'form': form, 'error_massage': "Измените необходимые поля", 'id': id}
 	return render(request, 'edit.html', context)
 
@@ -199,56 +223,13 @@ def save_changes(request, id):
 		form = ContactForm(request.POST)
 		if form.is_valid():
 			contact = Contact.objects.get(pk = id)
-			contact.surname = form.cleaned_data['surname']
-			contact.name = form.cleaned_data['name']
-			contact.patronymic = form.cleaned_data['patronymic']
-			contact.gender = form.cleaned_data['gender']
-			contact.birthday = form.cleaned_data['birthday']
-			j = form.cleaned_data['job']
-			if j == None:
-				j = form.cleaned_data['job_new']
-				if j == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите место работы"})
-			new_job, created = Job.objects.get_or_create(job = j)
-			if created:
-				new_job.save()
-			contact.job = new_job
-			p = form.cleaned_data['post']
-			if p == None:
-				p = form.cleaned_data['post_new']
-				if p == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите должность"})
-			new_post, created = Post.objects.get_or_create(post = p)
-			if created:
-				new_post.save()
-			contact.post = new_post
-			phone = form.cleaned_data['telephone']
-			if re.match(r'[+7, 8]{1}[0-9]{10}', phone):
-				contact.telephone =  phone
-			elif re.match(r'\+?[7, 8][-, (]*\d{3}[-, )]*\d{3}-?\d{2}-?\d{2}', phone):
-				contact.telephone = re.findall(r'([+7, \d+])', phone)
-			else:
-				return render(request, 'add.html', {'form': form, 'error_message': "Введите корректный номер телефона"})
-			contact.email = form.cleaned_data['email']
-			c = form.cleaned_data['city']
-			if c == None:
-				c = form.cleaned_data['city_new']
-				if c == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите город"})
-			new_city, created = City.objects.get_or_create(city = c)
-			if created:
-				new_city.save()
-			s = form.cleaned_data['street']
-			if s == None:
-				s = form.cleaned_data['street_new']
-				if s == None:
-					return render(request, 'edit.html', {'form': form, 'error_message': "Укажите улицу"})
-			new_street, created = Street.objects.get_or_create(city = new_city, street = s)
-			if created:
-				new_street.save()
-			contact.street = new_street
-			contact.building = form.cleaned_data['building']
-			contact.apartment = form.cleaned_data['apartment']
+			er, contact = func.check(form, contact)
+			if er:
+				if er == 'telephone':
+					error = "Введите корректный номер телефона"
+				elif er == 'street':
+					error = "Улицы {} нет в городе {}".format(form.cleaned_data['street'].street, form.cleaned_data['city'].city)
+				return render(request, 'edit.html', {'form': form, 'error_message': error, 'id': id})
 			contact.save()
 			return HttpResponseRedirect('http://127.0.0.1:8000/contactBook/')
 		else: 
